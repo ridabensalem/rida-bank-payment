@@ -351,5 +351,5 @@ app.post('/mock-checkout/:id/resolve', async (req, res) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`Mock Soap API running at http://localhost:${PORT}`)
+  console.log(`API running at http://localhost:${PORT}`)
 })
