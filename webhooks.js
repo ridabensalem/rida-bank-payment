@@ -1,9 +1,16 @@
 import crypto from 'crypto'
 
 export function verifySignature(rawBody, signatureHeader) {
+  if (!signatureHeader) return false;
+  
   const parts = signatureHeader.split(',')
-  const timestamp = parts.find(p => p.startsWith('t='))?.split('=')[1]
-  const signature = parts.find(p => p.startsWith('v1='))?.split('=')[1]
+  const timestampPart = parts.find(p => p.startsWith('t='))
+  const signaturePart = parts.find(p => p.startsWith('v1='))
+  
+  if (!timestampPart || !signaturePart) return false
+  
+  const timestamp = timestampPart.split('=')[1]
+  const signature = signaturePart.split('=')[1]
   if (!timestamp || !signature) return false
 
   const message = `${timestamp}.${rawBody}`
@@ -32,8 +39,9 @@ export function processEvent(event) {
   // This is not recommended to do at all, instead use Soap's built in payment reviews
   if (eventType === 'checkout.terminally_failed') {
     if (data.type === "withdrawal") {
-      const balance = 1000 // look up the amount you put on hold
-      return { balance_change_amount_cents: balance } // add it back to the balance
+      // FIX: Use actual amount from data instead of hardcoded 1000
+      const amount = data.charge?.amount_cents || 0
+      return { balance_change_amount_cents: amount }
     } else {
       return { balance_change_amount_cents: 0 }
     }
@@ -42,8 +50,9 @@ export function processEvent(event) {
   // This could be another example if you are placing balance on hold for a withdrawal
   if (eventType === 'checkout.expired') {
     if (data.type === "withdrawal") {
-      const balance = 1000 // look up the amount you put on hold
-      return { balance_change_amount_cents: balance } // add it back to the balance
+      // FIX: Use actual amount from data instead of hardcoded 1000
+      const amount = data.charge?.amount_cents || 0
+      return { balance_change_amount_cents: amount }
     } else {
       return { balance_change_amount_cents: 0 }
     }
